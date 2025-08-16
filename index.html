@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MirroEclipse - Servidor Discord RP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-logo {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .loading-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards, spin 1s linear infinite;
+        }
+
+        .loading-credit {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.9s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links li {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-links li:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-links li.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .page {
+            display: none;
+            min-height: calc(100vh - 80px);
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Home Page */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: slideInDown 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+            animation: slideInUp 1s ease 0.3s both;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            animation: slideInUp 1s ease 0.6s both;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        /* Team Page */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .team-member {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .member-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .member-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .member-role {
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .member-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* How to Play Page */
+        .guide-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .guide-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .guide-section p, .guide-section li {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .guide-section ul {
+            padding-left: 1.5rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        /* Football Tournament Page */
+        .tournament-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tournament-bracket {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .bracket-stage {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            nav {
+                padding: 1rem;
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            z-index: 1001;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">SANstudios</div>
+        <div class="loading-subtitle">MirroEclipse</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-credit">site feito por: PF</div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="showPage('home')">MirroEclipse</div>
+            <ul class="nav-links">
+                <li onclick="showPage('home')" class="active">Início</li>
+                <li onclick="showPage('team')">Equipa</li>
+                <li onclick="showPage('guide')">Como Jogar</li>
+                <li onclick="showPage('tournament')">Copa de Futebol</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="container">
+                <div class="hero">
+                    <h1>MirroEclipse</h1>
+                    <p>Bem-vindo ao servidor de roleplay mais imersivo do Discord</p>
+                    <a href="#" class="cta-button" onclick="showPage('guide')">Começar a Jogar</a>
+                </div>
+
+                <div class="features">
+                    <div class="feature-card" onclick="showPage('team')">
+                        <div class="feature-icon">👑</div>
+                        <h3>Equipa Dedicada</h3>
+                        <p>Uma equipa de moderação experiente pronta para te ajudar em qualquer momento</p>
+                    </div>
+                    <div class="feature-card" onclick="showPage('guide')">
+                        <div class="feature-icon">🎭</div>
+                        <h3>Roleplay Imersivo</h3>
+                        <p>Vive aventuras épicas com outros jogadores num mundo cheio de possibilidades</p>
+                    </div>
+                    <div class="feature-card" onclick="showPage('tournament')">
+                        <div class="feature-icon">⚽</div>
+                        <h3>Copa de Futebol</h3>
+                        <p>Participa no nosso torneio de futebol único e competitivo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Page -->
+        <div id="team" class="page">
+            <div class="container">
+                <div class="hero">
+                    <h1>Nossa Equipa</h1>
+                    <p>Conheça a equipa que torna o MirroEclipse possível</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="member-avatar">D</div>
+                        <div class="member-name">Diretor</div>
+                        <div class="member-role">Líder Supremo</div>
+                        <div class="member-description">Responsável pela visão geral do servidor e decisões importantes. Lidera toda a equipa com experiência e dedicação.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">VD</div>
+                        <div class="member-name">Vice Diretor</div>
+                        <div class="member-role">Braço Direito</div>
+                        <div class="member-description">Auxilia o Diretor em todas as decisões e coordena as atividades da equipa de moderação.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">A</div>
+                        <div class="member-name">Administrador</div>
+                        <div class="member-role">Gestor Principal</div>
+                        <div class="member-description">Gere o dia-a-dia do servidor, resolve conflitos e mantém a ordem entre os membros.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">AE</div>
+                        <div class="member-name">Adm de Emergência</div>
+                        <div class="member-role">Resposta Rápida</div>
+                        <div class="member-description">Disponível para situações urgentes e problemas que requerem ação imediata.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">AA</div>
+                        <div class="member-name">Aprendiz de Adm</div>
+                        <div class="member-role">Em Formação</div>
+                        <div class="member-description">Aprende as responsabilidades da administração e ajuda com tarefas básicas de moderação.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">P</div>
+                        <div class="member-name">Produtor</div>
+                        <div class="member-role">Criativo</div>
+                        <div class="member-description">Cria conteúdo, eventos especiais e desenvolve novas ideias para melhorar a experiência do servidor.</div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-avatar">N</div>
+                        <div class="member-name">Narrador</div>
+                        <div class="member-role">Contador de Histórias</div>
+                        <div class="member-description">Conduz as aventuras de roleplay, cria histórias envolventes e faz as tuas ações avançarem no jogo.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guide Page -->
+        <div id="guide" class="page">
+            <div class="container">
+                <div class="hero">
+                    <h1>Como Jogar</h1>
+                    <p>Guia completo para começares a tua jornada no MirroEclipse</p>
+                </div>
+
+                <div class="guide-section">
+                    <h2>Primeiros Passos</h2>
+                    <p>Bem-vindo ao MirroEclipse! Para começares a tua aventura, segue estes passos básicos:</p>
+                    <ul>
+                        <li>Lê as regras e instruções no canal apropriado</li>
+                        <li>Cria o teu personagem seguindo as diretrizes do servidor</li>
+                        <li>Familiariza-te com os diferentes canais e as suas funções</li>
+                        <li>Apresenta-te à comunidade</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2>Organizações e Sistemas</h2>
+                    <p>O servidor está organizado em várias secções para uma melhor experiência:</p>
+                    <ul>
+                        <li><strong>Fichas e Dados:</strong> Onde crias e geres o teu personagem</li>
+                        <li><strong>Nações:</strong> Diferentes países e regiões do mundo do jogo</li>
+                        <li><strong>Alianças:</strong> Forma alianças estratégicas com outros jogadores</li>
+                        <li><strong>Empresas:</strong> Cria e gere negócios no mundo virtual</li>
+                        <li><strong>Ações:</strong> Económicas, políticas, diplomáticas, militares e secretas</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h2>IMPORTANTE: Interação com Narradores</h2>
+                    <p><strong>Marcar os Narradores é fundamental!</strong></p>
+                    <p>Os Narradores são os responsáveis por fazer as tuas ações avançarem no jogo. Sempre que fizeres uma ação importante, certifica-te de marcar um Narrador para que possam processar e responder à tua jogada. Sem a intervenção dos Narradores, as tuas ações podem ficar em espera indefinidamente.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h2>Tipos de Ações</h2>
+                    <p>Podes realizar vários tipos de ações no servidor:</p>
+                    <ul>
+                        <li><strong>Ações Económicas:</strong> Comércio, investimentos, gestão de recursos</li>
+                        <li><strong>Ações Políticas:</strong> Diplomacia, negociações, eleições</li>
+                        <li><strong>Ações Diplomáticas:</strong> Tratados, alianças, acordos internacionais</li>
+                        <li><strong>Ações Militares:</strong> Operações bélicas, defesa, estratégias militares</li>
+                        <li><strong>Ações Secretas:</strong> Espionagem, operações clandestinas</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2>Dicas para um Bom Roleplay</h2>
+                    <ul>
+                        <li>Mantém-te sempre no personagem durante as interações</li>
+                        <li>Respeita os outros jogadores e as suas decisões</li>
+                        <li>Sê criativo mas realista nas tuas ações</li>
+                        <li>Comunica claramente as tuas intenções</li>
+                        <li>Colabora com outros jogadores para criar histórias interessantes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tournament Page -->
+        <div id="tournament" class="page">
+            <div class="container">
+                <div class="hero">
+                    <h1>Copa de Futebol</h1>
+                    <p>Descobre como funciona o nosso torneio de futebol único</p>
+                </div>
+
+                <div class="tournament-section">
+                    <h2>Como Funciona a Copa</h2>
+                    <p>A Copa de Futebol do MirroEclipse é um evento especial que combina roleplay com competição desportiva. Aqui está como funciona:</p>
+                    
+                    <div class="highlight-box">
+                        <h3>Inscrições</h3>
+                        <p>As equipas são formadas por nações ou alianças do servidor. Cada equipa deve ter um representante oficial que será responsável pelas decisões estratégicas durante os jogos.</p>
+                    </div>
+                </div>
+
+                <div class="tournament-section">
+                    <h2>Formato do Torneio</h2>
+                    <div class="tournament-bracket">
+                        <div class="bracket-stage">
+                            <h3>Fase de Grupos</h3>
+                            <p>Equipas divididas em grupos, jogam entre si numa primeira fase eliminatória</p>
+                        </div>
+                        <div class="bracket-stage">
+                            <h3>Oitavos de Final</h3>
+                            <p>Os melhores de cada grupo avançam para a fase de eliminação direta</p>
+                        </div>
+                        <div class="bracket-stage">
+                            <h3>Quartos de Final</h3>
+                            <p>Jogos únicos decidem quem avança para as semifinais</p>
+                        </div>
+                        <div class="bracket-stage">
+                            <h3>Semifinais</h3>
+                            <p>As quatro melhores equipas lutam por um lugar na final</p>
+                        </div>
+                        <div class="bracket-stage">
+                            <h3>Final</h3>
+                            <p>O jogo decisivo que coroa o campeão da Copa MirroEclipse</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tournament-section">
+                    <h2>Sistema de Jogo</h2>
+                    <ul>
+                        <li><strong>Simulação:</strong> Os jogos são simulados usando um sistema próprio que considera as características de cada equipa</li>
+                        <li><strong>Estratégia:</strong> Os representantes podem escolher táticas e formações que influenciam o resultado</li>
+                        <li><strong>Roleplay:</strong> Durante os jogos, os jogadores podem fazer roleplay como adeptos, comentadores ou jogadores</li>
+                        <li><strong>Transmissão:</strong> Os jogos são "transmitidos" em canais especiais com narração em tempo real</li>
+                    </ul>
+                </div>
+
+                <div class="tournament-section">
+                    <h2>Prémios e Reconhecimento</h2>
+                    <p>Os vencedores da Copa de Futebol recebem:</p>
+                    <ul>
+                        <li>Título especial no Discord</li>
+                        <li>Reconhecimento na galeria de campeões</li>
+                        <li>Vantagens especiais no roleplay</li>
+                        <li>Troféu virtual para a nação/aliança vencedora</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h2>Próxima Edição</h2>
+                    <p>Fica atento aos anúncios para saberes quando será a próxima Copa de Futebol! As inscrições são limitadas e abertas por períodos específicos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 MirroEclipse Discord Server. Desenvolvido por SANstudios.</p>
+            <p>Site criado por: PF</p>
+        </div>
+    </footer>
+
+    <script>
+        // Loading Screen
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }, 500);
+            }, 2000);
+        });
+
+        // Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Remove active class from nav items
+            const navItems = document.querySelectorAll('.nav-links li');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected page with animation
+            setTimeout(() => {
+                document.getElementById(pageId).classList.add('active');
+            }, 150);
+
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            const scrollIndicator = document.getElementById('scrollIndicator');
+            
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            // Update scroll indicator
+            const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+            scrollIndicator.style.width = scrollPercent + '%';
+        });
+
+        // Smooth animations on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const animateElements = document.querySelectorAll('.feature-card, .team-member, .guide-section, .tournament-section');
+            animateElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease';
+                observer.observe(el);
+            });
+        });
+
+        // Interactive hover effects
+        document.querySelectorAll('.feature-card, .team-member').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // CTA Button click effect
+        document.querySelector('.cta-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Create ripple effect
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.pointerEvents = 'none';
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+                showPage('guide');
+            }, 300);
+        });
+
+        // Add ripple animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Parallax effect for hero sections
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const heroes = document.querySelectorAll('.hero');
+            
+            heroes.forEach(hero => {
+                const rate = scrolled * -0.5;
+                hero.style.transform = `translateY(${rate}px)`;
+            });
+        });
+
+        // Mobile menu toggle (for future mobile optimization)
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('mobile-active');
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const pages = ['home', 'team', 'guide', 'tournament'];
+            const currentPage = document.querySelector('.page.active').id;
+            const currentIndex = pages.indexOf(currentPage);
+            
+            if (e.key === 'ArrowRight' && currentIndex < pages.length - 1) {
+                showPage(pages[currentIndex + 1]);
+            } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                showPage(pages[currentIndex - 1]);
+            }
+        });
+
+        // Page transition effects
+        let isTransitioning = false;
+        
+        function showPageWithTransition(pageId) {
+            if (isTransitioning) return;
+            
+            isTransitioning = true;
+            const currentPage = document.querySelector('.page.active');
+            const targetPage = document.getElementById(pageId);
+            
+            // Fade out current page
+            currentPage.style.opacity = '0';
+            currentPage.style.transform = 'translateX(-50px)';
+            
+            setTimeout(() => {
+                currentPage.classList.remove('active');
+                targetPage.classList.add('active');
+                
+                // Fade in target page
+                targetPage.style.opacity = '0';
+                targetPage.style.transform = 'translateX(50px)';
+                
+                setTimeout(() => {
+                    targetPage.style.opacity = '1';
+                    targetPage.style.transform = 'translateX(0)';
+                    isTransitioning = false;
+                }, 50);
+            }, 200);
+        }
+
+        // Enhanced loading screen with progress
+        let loadingProgress = 0;
+        const loadingInterval = setInterval(() => {
+            loadingProgress += Math.random() * 30;
+            if (loadingProgress >= 100) {
+                loadingProgress = 100;
+                clearInterval(loadingInterval);
+            }
+        }, 100);
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Easter egg - Konami code
+        let konamiCode = [];
+        const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+        
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode.shift();
+            }
+            
+            if (konamiCode.length === konamiSequence.length && 
+                konamiCode.every((code, index) => code === konamiSequence[index])) {
+                // Secret animation
+                document.body.style.animation = 'rainbow 2s infinite';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 5000);
+            }
+        });
+
+        // Add rainbow animation for easter egg
+        const rainbowStyle = document.createElement('style');
+        rainbowStyle.textContent = `
+            @keyframes rainbow {
+                0% { filter: hue-rotate(0deg); }
+                100% { filter: hue-rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(rainbowStyle);
+    </script>
+</body>
+</html>
