@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>MirroEclipse - Servidor Discord RP</title>
     <style>
         * {
@@ -16,6 +16,8 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #333;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Loading Screen */
@@ -35,20 +37,22 @@
         }
 
         .loading-logo {
-            font-size: 3rem;
+            font-size: clamp(2rem, 8vw, 3rem);
             font-weight: 700;
             color: white;
             margin-bottom: 1rem;
             opacity: 0;
             animation: fadeInUp 1s ease forwards;
+            text-align: center;
         }
 
         .loading-subtitle {
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 2rem;
             opacity: 0;
             animation: fadeInUp 1s ease 0.3s forwards;
+            text-align: center;
         }
 
         .loading-spinner {
@@ -70,6 +74,8 @@
             color: rgba(255, 255, 255, 0.5);
             opacity: 0;
             animation: fadeInUp 1s ease 0.9s forwards;
+            text-align: center;
+            padding: 0 20px;
         }
 
         @keyframes fadeInUp {
@@ -96,7 +102,7 @@
             right: 0;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            padding: 1rem 2rem;
+            padding: 1rem;
             z-index: 1000;
             transition: all 0.3s ease;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -113,10 +119,11 @@
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
             font-weight: 700;
             color: #667eea;
             cursor: pointer;
@@ -127,10 +134,40 @@
             transform: scale(1.05);
         }
 
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: #667eea;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 1rem;
         }
 
         .nav-links li {
@@ -140,6 +177,8 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         .nav-links li:hover {
@@ -154,14 +193,14 @@
 
         /* Main Content */
         .main-content {
-            margin-top: 80px;
-            min-height: calc(100vh - 80px);
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
         }
 
         .page {
             display: none;
-            min-height: calc(100vh - 80px);
-            padding: 2rem;
+            min-height: calc(100vh - 70px);
+            padding: 1rem;
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.6s ease;
@@ -181,29 +220,31 @@
         /* Home Page */
         .hero {
             text-align: center;
-            padding: 4rem 0;
+            padding: 2rem 1rem;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             backdrop-filter: blur(10px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 8vw, 3.5rem);
             font-weight: 700;
             margin-bottom: 1rem;
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: slideInDown 1s ease;
+            line-height: 1.2;
         }
 
         .hero p {
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
             color: #666;
             margin-bottom: 2rem;
             animation: slideInUp 1s ease 0.3s both;
+            line-height: 1.4;
         }
 
         .cta-button {
@@ -217,6 +258,11 @@
             transition: all 0.3s ease;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
             animation: slideInUp 1s ease 0.6s both;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .cta-button:hover {
@@ -224,28 +270,37 @@
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+
         /* Features Grid */
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
 
         .feature-card {
             background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 15px;
             text-align: center;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            transform: translateY(0);
         }
 
         .feature-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card:active {
+            transform: translateY(-2px);
         }
 
         .feature-icon {
@@ -261,17 +316,27 @@
             font-size: 1.5rem;
         }
 
+        .feature-card h3 {
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            line-height: 1.5;
+        }
+
         /* Team Page */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
             margin: 2rem 0;
         }
 
         .team-member {
             background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 15px;
             text-align: center;
             transition: all 0.3s ease;
@@ -285,8 +350,8 @@
         }
 
         .member-avatar {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea, #764ba2);
             display: flex;
@@ -294,12 +359,12 @@
             justify-content: center;
             margin: 0 auto 1rem;
             color: white;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
         }
 
         .member-name {
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: #333;
@@ -309,37 +374,45 @@
             color: #667eea;
             font-weight: 500;
             margin-bottom: 1rem;
+            font-size: clamp(0.9rem, 3vw, 1rem);
         }
 
         .member-description {
             color: #666;
-            font-size: 0.9rem;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
             line-height: 1.4;
         }
 
-        /* How to Play Page */
-        .guide-section {
+        /* Guide and Tournament Sections */
+        .guide-section,
+        .tournament-section {
             background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 15px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             backdrop-filter: blur(10px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .guide-section h2 {
+        .guide-section h2,
+        .tournament-section h2 {
             color: #667eea;
             margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
         }
 
-        .guide-section p, .guide-section li {
+        .guide-section p,
+        .guide-section li,
+        .tournament-section p,
+        .tournament-section li {
             line-height: 1.6;
             color: #555;
             margin-bottom: 0.5rem;
+            font-size: clamp(0.9rem, 3vw, 1rem);
         }
 
-        .guide-section ul {
+        .guide-section ul,
+        .tournament-section ul {
             padding-left: 1.5rem;
         }
 
@@ -351,19 +424,16 @@
             border-left: 4px solid #667eea;
         }
 
-        /* Football Tournament Page */
-        .tournament-section {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        .highlight-box h2,
+        .highlight-box h3 {
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            margin-bottom: 0.5rem;
         }
 
+        /* Tournament Bracket */
         .tournament-bracket {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr;
             gap: 1rem;
             margin: 2rem 0;
         }
@@ -373,6 +443,15 @@
             padding: 1rem;
             border-radius: 10px;
             text-align: center;
+        }
+
+        .bracket-stage h3 {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .bracket-stage p {
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
         }
 
         /* Animations */
@@ -398,37 +477,23 @@
             }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .team-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            nav {
-                padding: 1rem;
-            }
-        }
-
         /* Footer */
         footer {
             background: rgba(0, 0, 0, 0.8);
             color: white;
             text-align: center;
-            padding: 2rem;
-            margin-top: 3rem;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
         }
 
         .footer-content {
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .footer-content p {
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            margin-bottom: 0.5rem;
         }
 
         /* Scroll indicator */
@@ -440,6 +505,153 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             z-index: 1001;
             transition: width 0.3s ease;
+        }
+
+        /* Mobile Specific Styles */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 0;
+                transition: left 0.3s ease;
+                padding-top: 2rem;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                z-index: 999;
+            }
+            
+            .nav-links.mobile-active {
+                left: 0 !important;
+            }
+            
+            .nav-links li {
+                width: 80%;
+                text-align: center;
+                margin: 0.5rem 0;
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+                border-radius: 30px;
+                cursor: pointer;
+            }
+
+            .nav-links li:hover {
+                background: rgba(102, 126, 234, 0.1);
+                transform: scale(1.02);
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tournament-bracket {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .page {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                margin-top: 70px;
+            }
+
+            /* Touch improvements */
+            .feature-card,
+            .team-member,
+            .cta-button,
+            .nav-links li {
+                -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+                touch-action: manipulation;
+            }
+
+            /* Reduce motion for users who prefer it */
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                    scroll-behavior: auto !important;
+                }
+            }
+        }
+
+        /* Tablet Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tournament-bracket {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 1025px) {
+            .features {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+
+            .tournament-bracket {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            body {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .hero {
+                padding: 1rem;
+            }
+            
+            .hero h1 {
+                font-size: clamp(1.5rem, 6vw, 2.5rem);
+            }
+            
+            .nav-links {
+                height: calc(100vh - 60px);
+                top: 60px;
+                padding-top: 1rem;
+            }
         }
     </style>
 </head>
@@ -459,11 +671,19 @@
     <nav id="navbar">
         <div class="nav-container">
             <div class="logo" onclick="showPage('home')">MirroEclipse</div>
-            <ul class="nav-links">
-                <li onclick="showPage('home')" class="active">Início</li>
-                <li onclick="showPage('team')">Equipa</li>
-                <li onclick="showPage('guide')">Como Jogar</li>
-                <li onclick="showPage('tournament')">Copa de Futebol</li>
+            
+            <!-- Mobile Menu Button -->
+            <div class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <ul class="nav-links" id="navLinks">
+                <li onclick="showPage('home'); closeMobileMenu();" class="active">Início</li>
+                <li onclick="showPage('team'); closeMobileMenu();">Equipa</li>
+                <li onclick="showPage('guide'); closeMobileMenu();">Como Jogar</li>
+                <li onclick="showPage('tournament'); closeMobileMenu();">Copa de Futebol</li>
             </ul>
         </div>
     </nav>
@@ -716,6 +936,80 @@
             }, 2000);
         });
 
+        // Mobile Menu Functions
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            
+            console.log('Toggle menu clicked'); // Debug
+            
+            navLinks.classList.toggle('mobile-active');
+            mobileMenuBtn.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (navLinks.classList.contains('mobile-active')) {
+                document.body.style.overflow = 'hidden';
+                console.log('Menu opened'); // Debug
+            } else {
+                document.body.style.overflow = 'auto';
+                console.log('Menu closed'); // Debug
+            }
+        }
+
+        function closeMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            
+            navLinks.classList.remove('mobile-active');
+            mobileMenuBtn.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const navLinks = document.getElementById('navLinks');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navbar = document.getElementById('navbar');
+            
+            if (!navbar.contains(e.target) && navLinks.classList.contains('mobile-active')) {
+                closeMobileMenu();
+            }
+        });
+
+        // Ensure mobile menu button is visible on mobile
+        function checkMobileMenu() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (window.innerWidth <= 768) {
+                mobileMenuBtn.style.display = 'flex';
+                navLinks.style.display = 'flex';
+                console.log('Mobile view activated'); // Debug
+            } else {
+                mobileMenuBtn.style.display = 'none';
+                navLinks.style.display = 'flex';
+                navLinks.style.position = 'static';
+                navLinks.style.flexDirection = 'row';
+                navLinks.style.height = 'auto';
+                navLinks.style.width = 'auto';
+                navLinks.style.background = 'none';
+                navLinks.style.top = 'auto';
+                navLinks.style.left = 'auto';
+                closeMobileMenu();
+                console.log('Desktop view activated'); // Debug
+            }
+        }
+
+        // Close mobile menu on window resize
+        window.addEventListener('resize', function() {
+            checkMobileMenu();
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkMobileMenu();
+        });
+
         // Navigation
         function showPage(pageId) {
             // Hide all pages
@@ -735,8 +1029,13 @@
                 document.getElementById(pageId).classList.add('active');
             }, 150);
 
-            // Add active class to clicked nav item
-            event.target.classList.add('active');
+            // Add active class to corresponding nav item
+            const navItemsArray = Array.from(navItems);
+            const pageOrder = ['home', 'team', 'guide', 'tournament'];
+            const pageIndex = pageOrder.indexOf(pageId);
+            if (pageIndex !== -1 && navItemsArray[pageIndex]) {
+                navItemsArray[pageIndex].classList.add('active');
+            }
 
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -755,7 +1054,7 @@
 
             // Update scroll indicator
             const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-            scrollIndicator.style.width = scrollPercent + '%';
+            scrollIndicator.style.width = Math.min(scrollPercent, 100) + '%';
         });
 
         // Smooth animations on scroll
@@ -784,18 +1083,24 @@
             });
         });
 
-        // Interactive hover effects
-        document.querySelectorAll('.feature-card, .team-member').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px) scale(1.02)';
-            });
+        // Enhanced hover effects for touch devices
+        function addTouchSupport() {
+            const touchElements = document.querySelectorAll('.feature-card, .team-member, .cta-button');
             
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
+            touchElements.forEach(element => {
+                element.addEventListener('touchstart', function() {
+                    this.classList.add('touch-active');
+                }, { passive: true });
+                
+                element.addEventListener('touchend', function() {
+                    setTimeout(() => {
+                        this.classList.remove('touch-active');
+                    }, 150);
+                }, { passive: true });
             });
-        });
+        }
 
-        // CTA Button click effect
+        // CTA Button enhanced click effect
         document.querySelector('.cta-button').addEventListener('click', function(e) {
             e.preventDefault();
             
@@ -835,28 +1140,45 @@
                     opacity: 0;
                 }
             }
+            
+            .touch-active {
+                transform: scale(0.98) !important;
+                transition: transform 0.1s ease !important;
+            }
         `;
         document.head.appendChild(style);
 
-        // Parallax effect for hero sections
-        window.addEventListener('scroll', function() {
+        // Optimized parallax effect for mobile
+        let ticking = false;
+        
+        function updateParallax() {
             const scrolled = window.pageYOffset;
             const heroes = document.querySelectorAll('.hero');
             
+            // Reduce parallax effect on mobile for better performance
+            const isMobile = window.innerWidth <= 768;
+            const parallaxRate = isMobile ? -0.2 : -0.5;
+            
             heroes.forEach(hero => {
-                const rate = scrolled * -0.5;
+                const rate = scrolled * parallaxRate;
                 hero.style.transform = `translateY(${rate}px)`;
             });
-        });
-
-        // Mobile menu toggle (for future mobile optimization)
-        function toggleMobileMenu() {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.classList.toggle('mobile-active');
+            
+            ticking = false;
         }
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        });
 
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
+            // Only enable keyboard navigation on desktop
+            if (window.innerWidth <= 768) return;
+            
             const pages = ['home', 'team', 'guide', 'tournament'];
             const currentPage = document.querySelector('.page.active').id;
             const currentIndex = pages.indexOf(currentPage);
@@ -868,47 +1190,80 @@
             }
         });
 
-        // Page transition effects
-        let isTransitioning = false;
-        
-        function showPageWithTransition(pageId) {
-            if (isTransitioning) return;
+        // Swipe gesture support for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const swipeDistance = touchEndX - touchStartX;
+            const verticalDistance = Math.abs(touchEndY - touchStartY);
             
-            isTransitioning = true;
-            const currentPage = document.querySelector('.page.active');
-            const targetPage = document.getElementById(pageId);
-            
-            // Fade out current page
-            currentPage.style.opacity = '0';
-            currentPage.style.transform = 'translateX(-50px)';
-            
-            setTimeout(() => {
-                currentPage.classList.remove('active');
-                targetPage.classList.add('active');
+            // Only trigger swipe if horizontal movement is greater than vertical
+            if (Math.abs(swipeDistance) > swipeThreshold && verticalDistance < 100) {
+                const pages = ['home', 'team', 'guide', 'tournament'];
+                const currentPage = document.querySelector('.page.active').id;
+                const currentIndex = pages.indexOf(currentPage);
                 
-                // Fade in target page
-                targetPage.style.opacity = '0';
-                targetPage.style.transform = 'translateX(50px)';
-                
-                setTimeout(() => {
-                    targetPage.style.opacity = '1';
-                    targetPage.style.transform = 'translateX(0)';
-                    isTransitioning = false;
-                }, 50);
-            }, 200);
+                if (swipeDistance > 0 && currentIndex > 0) {
+                    // Swipe right - go to previous page
+                    showPage(pages[currentIndex - 1]);
+                } else if (swipeDistance < 0 && currentIndex < pages.length - 1) {
+                    // Swipe left - go to next page
+                    showPage(pages[currentIndex + 1]);
+                }
+            }
         }
 
-        // Enhanced loading screen with progress
-        let loadingProgress = 0;
-        const loadingInterval = setInterval(() => {
-            loadingProgress += Math.random() * 30;
-            if (loadingProgress >= 100) {
-                loadingProgress = 100;
-                clearInterval(loadingInterval);
-            }
-        }, 100);
+        // Viewport height fix for mobile browsers
+        function setVH() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
 
-        // Smooth scroll for anchor links
+        window.addEventListener('resize', setVH);
+        setVH();
+
+        // Performance optimizations
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Debounced resize handler
+        const debouncedResize = debounce(function() {
+            setVH();
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        }, 250);
+
+        window.addEventListener('resize', debouncedResize);
+
+        // Initialize touch support
+        addTouchSupport();
+
+        // Smooth scroll behavior for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -922,35 +1277,60 @@
             });
         });
 
-        // Easter egg - Konami code
-        let konamiCode = [];
-        const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
-        
-        document.addEventListener('keydown', function(e) {
-            konamiCode.push(e.keyCode);
-            if (konamiCode.length > konamiSequence.length) {
-                konamiCode.shift();
+        // Orientation change handler
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                setVH();
+                window.scrollTo(0, window.scrollY);
+            }, 100);
+        });
+
+        // Prevent zoom on double tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
             }
-            
-            if (konamiCode.length === konamiSequence.length && 
-                konamiCode.every((code, index) => code === konamiSequence[index])) {
-                // Secret animation
-                document.body.style.animation = 'rainbow 2s infinite';
-                setTimeout(() => {
-                    document.body.style.animation = '';
-                }, 5000);
+            lastTouchEnd = now;
+        }, false);
+
+        // Enhanced loading screen with progress
+        let loadingProgress = 0;
+        const loadingInterval = setInterval(() => {
+            loadingProgress += Math.random() * 30;
+            if (loadingProgress >= 100) {
+                loadingProgress = 100;
+                clearInterval(loadingInterval);
+            }
+        }, 100);
+
+        // Service Worker registration for offline support (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Uncomment the next line if you have a service worker
+                // navigator.serviceWorker.register('/sw.js');
+            });
+        }
+
+        // Page visibility API to pause animations when tab is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Pause resource-intensive operations
+                document.body.classList.add('page-hidden');
+            } else {
+                // Resume operations
+                document.body.classList.remove('page-hidden');
             }
         });
 
-        // Add rainbow animation for easter egg
-        const rainbowStyle = document.createElement('style');
-        rainbowStyle.textContent = `
-            @keyframes rainbow {
-                0% { filter: hue-rotate(0deg); }
-                100% { filter: hue-rotate(360deg); }
+        // Memory cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            // Cleanup observers
+            if (observer) {
+                observer.disconnect();
             }
-        `;
-        document.head.appendChild(rainbowStyle);
+        });
     </script>
 </body>
 </html>
